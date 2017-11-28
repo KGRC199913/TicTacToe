@@ -24,6 +24,7 @@ int main()
 void play(int a[][N_COLS])
 {
 	int winner;
+	printf("You are [O] player\n");
 	do
 	{
 		//dự định dùng cho PvP, không có tác dụng hiện tại
@@ -41,12 +42,10 @@ void play(int a[][N_COLS])
 			print_board(a);
 			if (winner == -2)
 			{
-				printf("\nhoa\n");
-				printf("\n0\n");
+				printf("\Draw\n\n0\n");
 				return;
 			}
-			printf("\nMay thang\n");
-			printf("\n1\n");
+			printf("\nAI is the winner\n\n1\n");
 			return;
 		}
 
@@ -62,8 +61,7 @@ void play(int a[][N_COLS])
 				printf("\n0\n");
 				return;
 			}
-			printf("\nNguoi thang (did you cheat ? =.=)\n");
-			printf("\n-1\n");
+			printf("\nHuman is The Winner (you've cheated, right ? admit it =.=)\n\n-1\n");
 			return;
 		}
 		system("cls");
@@ -89,9 +87,9 @@ void print_board(int a[][N_COLS])
 		printf(" %i ", i); // In chỉ số dòng của bàn cờ
 		for (int j = 0; j < N_COLS; j++) // Duyệt cột
 		{
-			if (a[i][j] < 0)
+			if (a[i][j] > 0)
 				printf("| x ");
-			else if (a[i][j] > 0)
+			else if (a[i][j] < 0)
 				printf("| o ");
 			else
 				printf("|   ");
@@ -161,7 +159,7 @@ void player_turn(int a[][N_COLS])
 	int x, y;
 	do
 	{
-		printf("X turn, please enter row value and then, collum value: \n");
+		printf("Player's turn, please enter row value and then, collum value: \n");
 		scanf("%i %i", &x, &y);
 	} while ((x>2) || (x<0) || (y > 2) || (y < 0) || (a[x][y] != 0)); 
 	a[x][y] = -1;
@@ -217,6 +215,6 @@ int minimax(int a[][N_COLS], int cPlayer)
 				a[i][j] = 0; //trả lại trạng thái như lúc đầu
 			}
 		}
-	if (possible_win == -1) return 0; //nước đi tồi => trả về 0 điểm
+	if (possible_win == -1) return 0; //nước đi tồi => trả về 0
 	return score;
 }
