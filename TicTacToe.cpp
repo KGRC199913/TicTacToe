@@ -1,4 +1,4 @@
-﻿//Phạm Hoàng Anh Tuấn
+//Phạm Hoàng Anh Tuấn
 //MSSV 1753123
 
 #define _CRT_SECURE_NO_WARNINGS
