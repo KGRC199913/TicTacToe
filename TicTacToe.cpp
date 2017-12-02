@@ -4,42 +4,41 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <conio.h>
-#include <cstdlib> //để sử dụng lệnh xóa màn hình console
+#include <cstdlib> //để sử dụng lệnh xóa màn hình console và random
+#include <time.h> //dùng để tạo seed random
 #define N_ROWS 3
 #define N_COLS 3
 
-void print_board(int a[][N_COLS]);
+
+void print_board(int a[][N_COLS], char Player, char Com);
 int check(int a[][N_COLS]);
 int check_draw(int a[][N_COLS]);
 void player_turn(int a[][N_COLS]);
 void AI_turn(int a[][N_COLS]);
 int minimax(int a[][N_COLS], int cPlayer);
-void play(int a[][N_COLS]);
+void play(int a[][N_COLS], char Player, char Com);
+void X_or_O(char *Player, char *Com);
 int main()
 {
+	char Player, Com;
+	X_or_O(&Player, &Com);
+	srand(time(NULL));
 	static int a[N_ROWS][N_COLS]; //khởi tạo mảng
-	play(a); //hàm mở game
+	play(a, Player, Com); //hàm mở game
 }
 
-void play(int a[][N_COLS])
+void play(int a[][N_COLS], char Player, char Com)
 {
 	int winner;
-	printf("You are [O] player\n");
+	printf("You are [%c] player\n", Player);
 	do
 	{
-		//dự định dùng cho PvP, không có tác dụng hiện tại
-		/*do
-		{
-		printf("X turn, please enter row value and then collum value: \n");
-		scanf("%i %i", &x, &y);
-		} while ((x > 2) || (x < 0) || (y > 2) || (y < 0) || (a[x][y] != 0));
-		a[x][y] = 1;*/
 		AI_turn(a);
 		winner = check(a);
 		if (winner != 0)
 		{
 			system("cls");
-			print_board(a);
+			print_board(a, Player, Com);
 			if (winner == -2)
 			{
 				printf("\Draw\n\n0\n");
@@ -48,13 +47,13 @@ void play(int a[][N_COLS])
 			printf("\nAI is the winner\n\n1\n");
 			return;
 		}
-
+		print_board(a, Player, Com);
 		player_turn(a);
 		winner = check(a);
 		if (winner != 0)
 		{
 			system("cls");
-			print_board(a);
+			print_board(a, Player, Com);
 			if (winner == -2)
 			{
 				printf("\nhoa\n");
@@ -68,7 +67,7 @@ void play(int a[][N_COLS])
 	} 
 	while (true);
 }
-void print_board(int a[][N_COLS])
+void print_board(int a[][N_COLS], char Player, char Com)
 {
 	// In chỉ số cột của bàn cờ
 	printf("\n   ");
@@ -88,9 +87,9 @@ void print_board(int a[][N_COLS])
 		for (int j = 0; j < N_COLS; j++) // Duyệt cột
 		{
 			if (a[i][j] > 0)
-				printf("| x ");
+				printf("| %c ", Com);
 			else if (a[i][j] < 0)
-				printf("| o ");
+				printf("| %c ", Player);
 			else
 				printf("|   ");
 		}
@@ -155,7 +154,6 @@ int check_draw(int a[][N_COLS])
 //lượt của người chơi
 void player_turn(int a[][N_COLS])
 {
-	print_board(a);
 	int x, y;
 	do
 	{
@@ -168,10 +166,13 @@ void player_turn(int a[][N_COLS])
 //lượt của máy
 void AI_turn(int a[][N_COLS])
 {
-	int moveX = -1,	moveY = -1;
-	int score = -2;
+	int moveX, moveY;
 	int i, j;
-
+	int score = 0;
+	int list_X[30]; //lưu trữ vị trí hàng các nước đi hợp lệ
+	int list_Y[30]; //lưu trữ vị trí cột các nước đi hợp lệ
+	int counter = 0;
+	int flag = 0;
 	for (i = 0; i < N_ROWS; i++)
 		for (j = 0; j < N_COLS; j++)
 		{
@@ -180,24 +181,28 @@ void AI_turn(int a[][N_COLS])
 				a[i][j] = 1;
 				int tScore = -minimax(a, -1);
 				a[i][j] = 0;
-				if (tScore > score) 
+				if (tScore >= score)
 				{
 					score = tScore;
-					moveX = i;
-					moveY = j;
+					counter++;
+					list_X[counter - 1] = i;
+					list_Y[counter - 1] = j;
 				}
 			}
 		}
+	flag = rand() % counter; //biến chọn random nước đi
+	moveX = list_X[flag];
+	moveY = list_Y[flag];
 	a[moveX][moveY] = 1;
 }
 
 //thuật toán minimax
-int minimax(int a[][N_COLS], int cPlayer)
+int minimax(int a[][N_COLS], int cPlayer) //cPlayer = current player
 {
 	int win = check(a); //kiểm tra trạng thái bàn cờ
 	if ((win != 0) && (win != -2))
 		return win*cPlayer; //nếu đã đạt trạng thái kết thúc thì trả về số điểm của trạng thái
-	int possible_win = -1;;
+	int possible_win = -1;
 	int score = -2;
 	int i, j;
 	for (i = 0; i < N_ROWS; i++)
@@ -215,6 +220,17 @@ int minimax(int a[][N_COLS], int cPlayer)
 				a[i][j] = 0; //trả lại trạng thái như lúc đầu
 			}
 		}
-	if (possible_win == -1) return 0; //nước đi tồi => trả về 0
+	if (possible_win == -1) return 0; //không có khả năng thắng với nước đi này
 	return score;
+}
+
+void X_or_O(char *Player, char *Com)
+{
+	do
+	{
+		printf("[x] or [o] ?\n");
+		scanf("%c", Player);
+	} while (((*Player) != 'x') && ((*Player) != 'o'));
+	if ((*Player) == 'x') ((*Com) = 'o');
+	else ((*Com) = 'x');
 }
